@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confession Wall</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .confession-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #c0392b;
+        }
+        
+        .confession-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .confession {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .confession:hover {
+            transform: translateY(-5px);
+        }
+        
+        .confession-text {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .confession-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .confession-date {
+            font-style: italic;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+        
+        .heart {
+            color: #e74c3c;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .confession-meta {
+                flex-direction: column;
+            }
+            
+            .confession-date {
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Confession Wall</h1>
+            <p class="subtitle">Share your thoughts anonymously. Everyone can see your message.</p>
+        </header>
+        
+        <section class="confession-form">
+            <textarea id="confessionText" placeholder="What's on your mind? Share your confession here..."></textarea>
+            <button id="submitBtn">Post Confession</button>
+        </section>
+        
+        <section class="confession-list" id="confessionList">
+            <!-- Confessions will appear here -->
+            <div class="empty-state">
+                <div class="heart">❤️</div>
+                <h3>No confessions yet</h3>
+                <p>Be the first to share your thoughts!</p>
+            </div>
+        </section>
+        
+        <footer>
+            <p>Confession Wall &copy; 2023 | All messages are anonymous</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confessionText = document.getElementById('confessionText');
+            const submitBtn = document.getElementById('submitBtn');
+            const confessionList = document.getElementById('confessionList');
+            
+            // Load confessions from localStorage
+            let confessions = JSON.parse(localStorage.getItem('confessions')) || [];
+            
+            // Display existing confessions
+            displayConfessions();
+            
+            // Submit new confession
+            submitBtn.addEventListener('click', function() {
+                const text = confessionText.value.trim();
+                
+                if (text) {
+                    // Create new confession
+                    const newConfession = {
+                        id: Date.now(),
+                        text: text,
+                        date: new Date().toLocaleString()
+                    };
+                    
+                    // Add to array
+                    confessions.unshift(newConfession);
+                    
+                    // Save to localStorage
+                    localStorage.setItem('confessions', JSON.stringify(confessions));
+                    
+                    // Clear textarea
+                    confessionText.value = '';
+                    
+                    // Refresh display
+                    displayConfessions();
+                }
+            });
+            
+            // Display all confessions
+            function displayConfessions() {
+                if (confessions.length === 0) {
+                    confessionList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="heart">❤️</div>
+                            <h3>No confessions yet</h3>
+                            <p>Be the first to share your thoughts!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                confessionList.innerHTML = '';
+                
+                confessions.forEach(confession => {
+                    const confessionElement = document.createElement('div');
+                    confessionElement.className = 'confession';
+                    confessionElement.innerHTML = `
+                        <div class="confession-text">${confession.text}</div>
+                        <div class="confession-meta">
+                            <span class="confession-anon">Anonymous</span>
+                            <span class="confession-date">${confession.date}</span>
+                        </div>
+                    `;
+                    
+                    confessionList.appendChild(confessionElement);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
